@@ -26,9 +26,14 @@ def out_folder(folder, ids):
             cmd = 'fastq-dump -I --split-files ' + ids[i]
             os.system(cmd)
             i+=1
-    return sra_urls
+    else:
+        #Be sure output directory is the correct one
+        os.chdir('PipelineProject_Samantha_Rutherford')
+
 #Call output folder function with designated name and our ids list
 out_folder('PipelineProject_Samantha_Rutherford', sra_ids)
+
+
 
 #Assign each file name to a variable for now //break//
 d1_2_1 = sra_ids[0] + '_1.fastq'
