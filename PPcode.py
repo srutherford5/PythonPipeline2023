@@ -23,12 +23,18 @@ def out_folder(folder, ids):
         os.chdir('PipelineProject_Samantha_Rutherford')
         #Set up an empty list to assign urls and a for loop to create individual urls
         i=0
-        sra_urls = []
+        #sra_urls = []
         for id in ids:
-            temp =  url + ids[i] + '/' + ids[i]
-            sra_urls.append(temp)
+            os.chdir('..')
+            #Move all sample contents to our output folder
+            sra = ids[i]
+            cd = 'mv ' + sra + ' PipelineProject_Samantha_Rutherford/'
+            os.system(cd)
+            os.chdir('PipelineProject_Samantha_Rutherford')
+            #temp =  url + ids[i] + '/' + ids[i]
+            #sra_urls.append(temp)
             #Use wget to download sra files and os to use fastq to split the paired-end files
-            wget.download(sra_urls[i])
+            #wget.download(sra_urls[i])
             cmd = 'fastq-dump -I --split-files ' + ids[i]
             os.system(cmd)
             i+=1
@@ -129,6 +135,8 @@ with open(kout, 'w') as f:
     f.write(kstring)
 #Change directory to call the Rscript for sleuth
 os.chdir('..')
+#Move Beta fasta file into Output folder for easier processing
+os.system('mv Betaherpesvirinae.fasta PipelineProject_Samantha_Rutherford')
 os.system('Rscript rPPcode.r')
 #Switch back to output so we can log the output from sleuth
 os.chdir('PipelineProject_Samantha_Rutherford')
@@ -140,7 +148,7 @@ logging.info(sleuth)
 
 
 #Step 5 on god
-print(sleuth)
+
 #Most differentially expressed cds is protein YP_081539.1 so retrieve fasta file for the sequence
 handle_2 = Entrez.efetch(db ='protein', id = 'YP_081539.1', rettype = 'fasta', retmode = 'text')
 protein = SeqIO.parse(handle_2, 'fasta')
