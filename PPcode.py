@@ -40,16 +40,6 @@ out_folder('PipelineProject_Samantha_Rutherford', sra_ids)
 #Create log file
 logging.basicConfig(filename='PipelineProject.log', filemode='w', level=logging.INFO)
 
-#Assign each file name to a variable just in case
-d1_2_1 = sra_ids[0] + '_1.fastq'
-d1_2_2 = sra_ids[0] + '_2.fastq'
-d1_6_1 = sra_ids[1] + '_1.fastq'
-d1_6_2 = sra_ids[1] + '_2.fastq'
-d3_2_1 = sra_ids[2] + '_1.fastq'
-d3_2_2 = sra_ids[2] + '_2.fastq'
-d3_6_1 = sra_ids[3] + '_1.fastq'
-d3_6_2 = sra_ids[3] + '_2.fastq'
-
 
 #Step 2 Indexing
 
@@ -75,10 +65,21 @@ for feature in cds:
 SeqIO.write(seqs, 'NC_006273.2.fasta', 'fasta')
 #Create variable
 logging.info('The HCMV genome (NC_006273.2) has %s CDS.', len(seqs))
-#Build the HCMV index for Kallisto with coding sequence fasta
-os.system('time kallisto index -i NC_006273.2.idx NC_006273.2.fasta --make-unique -k 31')
 
+#Function to ensure index and abundance files are only created once
+def quant_results(folder, ids):
+    #If it already exists we do not create the folder again
+    if os.path.isdir(folder)==False:
+        os.mkdir(folder)
+        #Build the HCMV index for Kallisto with coding sequence fasta
+        os.system('time kallisto index -i NC_006273.2.idx NC_006273.2.fasta --make-unique -k 31')
+        #i is my favorite counter
+        i = 0
+        #For loop iterates through each sample, creating TPM output
+        for id in ids:
+            fastq1 = ids[i] + '_1.fastq'
+            fastq2 = ids[i] + '_2.fastq'
+            cmd = 'time kallisto quant -i NC_006273.2.idx -o results/' + ids[i] + ' -b 30 -t 2 ' + fastq1 + ' ' + fastq2
+            os.system(cmd)
 
-#Step 3 Quantification
-
-
+quant_results('results', sra_ids)
