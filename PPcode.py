@@ -91,7 +91,7 @@ quant_out('results', sra_ids)
 def quant_results(ids, sample):
     #Write log header and column values
     logging.info("Quantitative Statistics of HCMV Sample's TPM")
-    mess = 'sample\tcondition\tmin_tpm\tmed_tpm\tmean_tpm\t\tmax_tpm'
+    mess = 'sample\tcondition\tmin_tpm\tmed_tpm\tmean_tpm\tmax_tpm'
     logging.info(mess)
     i = 0
     d = 0
@@ -111,7 +111,7 @@ def quant_results(ids, sample):
         tmean = tpm.mean()
         tmax = tpm.max()
         #Log stats and move directory back to results before next iteration
-        log_mess = sample[d] + '\t' + sample[d+1] + '\t '+ '\t' + str(tmin) +  '\t' + str(tmed) + '\t' + str(tmean) + '\t' + str(tmax)
+        log_mess = sample[d] + '\t' + sample[d+1] + '\t' + str(tmin) +  '\t' + str(tmed) + '\t' + str(tmean) + '\t' + str(tmax)
         logging.info(log_mess)
         os.chdir('..')
         i+=1
@@ -119,7 +119,22 @@ def quant_results(ids, sample):
 
 quant_results(sra_ids, donors)
 
-#Change directory to original repository to retrieve R code
+#Change directory to output to create kallisto output table
 os.chdir('..')
+#Pandas dataframe created to ensure delimited file and written out to txt file
+kdf = pd.DataFrame({'sample': sra_ids, 'condition':['2dpi','6dpi','2dpi','6dpi'], 'path': ['results/SRR5660030', 'results/SRR5660033', 'results/SRR5660044', 'results/SRR5660045']})
+kout = 'Sleuth_table.txt'
+with open(kout, 'w') as f:
+    kstring = kdf.to_string(header=True, index=False)
+    f.write(kstring)
+#Change directory to call the Rscript for sleuth
 os.chdir('..')
-os.system('nohup Rscript rPPcode.r &')
+os.system('Rscript rPPcode.r')
+#Switch back to output so we can log the output from sleuth
+os.chdir('PipelineProject_Samantha_Rutherford')
+open_sleuth = open('fdr05_results.txt', 'r')
+sleuth = open_sleuth.read()
+logging.info('\n')
+logging.info('Differential Gene Expression Between Two Timepoints 2pi and 6pi')
+logging.info(sleuth)
+
