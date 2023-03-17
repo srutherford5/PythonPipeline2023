@@ -117,5 +117,9 @@ def quant_results(ids, sample):
         i+=1
         d+=2
 
-
 quant_results(sra_ids, donors)
+
+#Change directory to original repository to retrieve R code
+os.chdir('..')
+os.chdir('..')
+os.system('nohup Rscript rPPcode.r &')
