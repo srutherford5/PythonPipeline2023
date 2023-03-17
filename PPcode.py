@@ -1,9 +1,12 @@
 #Start with imports python will need to run the code
+import logging
 import wget
 import sys
 import os
 from Bio import Entrez
 from Bio import SeqIO
+
+#Part 1 Sample Accession
 #Import test data by setting a stock URL variable
 url = 'https://sra-pub-run-odp.s3.amazonaws.com/sra/'
 #List of ids in order of patient and day 2 or 6 post infection
@@ -34,6 +37,9 @@ def out_folder(folder, ids):
 #Call output folder function with designated name and our ids list
 out_folder('PipelineProject_Samantha_Rutherford', sra_ids)
 
+#Create log file
+logging.basicConfig(filename='PipelineProject.log', filemode='w', level=logging.INFO)
+
 #Assign each file name to a variable just in case
 d1_2_1 = sra_ids[0] + '_1.fastq'
 d1_2_2 = sra_ids[0] + '_2.fastq'
@@ -45,8 +51,7 @@ d3_6_1 = sra_ids[3] + '_1.fastq'
 d3_6_2 = sra_ids[3] + '_2.fastq'
 
 
-#Begin part 2
-
+#Step 2 Indexing
 
 #Use Entrez to access the HCMV genome and SeqIO for later parsing
 Entrez.email = 'srutherford@luc.edu'
@@ -68,6 +73,12 @@ for feature in cds:
     seqs.append(seq)
 #Write coding sequences to a fasta file
 SeqIO.write(seqs, 'NC_006273.2.fasta', 'fasta')
-
+#Create variable
+logging.info('The HCMV genome (NC_006273.2) has %s CDS.', len(seqs))
 #Build the HCMV index for Kallisto with coding sequence fasta
 os.system('time kallisto index -i NC_006273.2.idx NC_006273.2.fasta --make-unique -k 31')
+
+
+#Step 3 Quantification
+
+
