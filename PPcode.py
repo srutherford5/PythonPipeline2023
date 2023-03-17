@@ -6,7 +6,7 @@ import os
 from Bio import Entrez
 from Bio import SeqIO
 import pandas as pd
-
+import csv
 #Part 1 Sample Accession
 #Import test data by setting a stock URL variable
 url = 'https://sra-pub-run-odp.s3.amazonaws.com/sra/'
@@ -138,3 +138,29 @@ logging.info('\n')
 logging.info('Differential Gene Expression Between Two Timepoints 2pi and 6pi')
 logging.info(sleuth)
 
+
+#Step 5 on god
+print(sleuth)
+#Most differentially expressed cds is protein YP_081539.1 so retrieve fasta file for the sequence
+handle_2 = Entrez.efetch(db ='protein', id = 'YP_081539.1', rettype = 'fasta', retmode = 'text')
+protein = SeqIO.parse(handle_2, 'fasta')
+pro_file = 'YP_081539.1.fasta'
+SeqIO.write(protein, pro_file, 'fasta')
+#Make database with fasta file from NCBI
+os.system('makeblastdb -in Betaherpesvirinae.fasta -out Betaherpesviridae -title Betaherpesviridae -dbtype nucl')
+blast_call = 'tblastn -query YP_081539.1.fasta -db Betaherpesviridae -out beta_tblastn_results.csv -outfmt "10 sacc pident length qstart qend sstart send bitscore evalue stitle"'
+os.system(blast_call)
+logging.info('\n')
+logging.info('Top 10 Blasted Betaherpesviridae')
+logging.info('sacc\tpident\tlength\tqstart\tqend\tsstart\tsend\tbitscore\tevalue\tstitle')
+#Convert csv to txt with csv to write to log
+csv_file = 'beta_tblastn_results.csv'
+txt_file = 'beta_log.txt'
+with open(txt_file, "w") as log:
+    with open(csv_file, "r") as in_log:
+        [log.write(" ".join(row)+'\n') for row in csv.reader(in_log)]
+    log.close()
+
+log_w = open(txt_file, 'r')
+logg = log_w.read()
+logging.info(logg)
